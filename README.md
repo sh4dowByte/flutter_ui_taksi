@@ -59,7 +59,7 @@ This project is built using the following technologies:
 
 | ![1733104646007](image/README/1733104646007.png)                                                                                                |                                                |
 | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| ![1733104679796](https://file+.vscode-resource.vscode-cdn.net/Users/ahmadjuhdi/Flutter/Project/flutter_ui_taksi/image/README/1733104679796.png) | ![1733104729341](image/README/1733104729341.png) |
+| ![1733104679796](image/README/1733104679796.png) | ![1733104729341](image/README/1733104729341.png) |
 | ![1733104764204](image/README/1733104764204.png)                                                                                                | ![1733104803940](image/README/1733104803940.png) |
 | ![1733104849994](image/README/1733104849994.png)                                                                                                |                                                |
 
