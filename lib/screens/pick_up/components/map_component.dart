@@ -27,6 +27,19 @@ class _MapComponentState extends State<MapComponent> {
   String? _mapStyle;
   bool myLocationInit = false;
   double iconSize = 100;
+  double _mapRotation = 0.0;
+
+  void _updateMarkerRotation(double newRotation) {
+    setState(() {
+      _markers = _markers.map((marker) {
+        if (marker.markerId == const MarkerId('riderMarker')) {
+          // Sesuaikan rotasi marker
+          return marker.copyWith(rotationParam: 360 - newRotation + 130);
+        }
+        return marker;
+      }).toSet();
+    });
+  }
 
   @override
   void initState() {
@@ -243,6 +256,12 @@ class _MapComponentState extends State<MapComponent> {
         ),
         style: _mapStyle,
         markers: _markers,
+        onCameraMove: (CameraPosition position) {
+          setState(() {
+            _mapRotation = position.bearing; // Simpan rotasi
+            _updateMarkerRotation(_mapRotation); // Perbarui marker
+          });
+        },
       ),
     );
   }
