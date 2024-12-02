@@ -5,9 +5,8 @@
     <img src="https://badgen.net/badge/Flutter/3.19.3/blue" alt="Flutter Version" style="max-width: 100%;">
     <img src="https://badgen.net/badge/Dart/3.3.1/blue" alt="Dart Version" style="max-width: 100%;">
     <img src="https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg" alt="Dart Version" style="max-width: 100%;">
-    
-</p>
 
+</p>
 
 # Flutter Taksi UI
 
@@ -27,11 +26,10 @@ The design of this application is based on the provided Figma file. The slicing 
 
 The application features:
 
-- **Google Maps Integration**: Interactive maps for selecting pick-up and destination locations with real-time tracking.
+- **Google Maps Integration**: Interactive maps for selecting pick-up.
 - **Responsive Design**: Supports various screen sizes with responsive UI elements.
 - **Seamless Navigation**: Implements navigation using Flutter Navigator for a smooth user flow.
 - **Reusable Components**: Modular components for easier development and maintenance.
-- **Modern Design Elements**: Custom icons for vehicle types, smooth transition animations, and aesthetically pleasing visuals.
 
 ## 🛠️ Technologies
 
@@ -68,6 +66,7 @@ Before running the application, you need to replace the placeholder for your API
 3. Replace `YOUR_MAPS_API_KEY` with your actual API key.
 
 Example:
+
 ```xml
 <meta-data
     android:name="com.google.android.geo.API_KEY"
@@ -76,11 +75,11 @@ Example:
 
 ## 🖼️ Screenshot
 
-| ![1733104646007](image/README/1733104646007.png)                                                                                                |                                                |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| ![1733104646007](image/README/1733104646007.png) |                                                |
+| ---------------------------------------------- | ---------------------------------------------- |
 | ![1733104679796](image/README/1733104679796.png) | ![1733104729341](image/README/1733104729341.png) |
-| ![1733104764204](image/README/1733104764204.png)                                                                                                | ![1733104803940](image/README/1733104803940.png) |
-| ![1733104849994](image/README/1733104849994.png)                                                                                                |                                                |
+| ![1733104764204](image/README/1733104764204.png) | ![1733104803940](image/README/1733104803940.png) |
+| ![1733104849994](image/README/1733104849994.png) |                                                |
 
 ## License
 
