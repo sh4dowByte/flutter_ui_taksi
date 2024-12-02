@@ -34,7 +34,7 @@ jobs:
 
       - name: Inject API Key into AndroidManifest.xml
         run: |
-          sed -i 's/YOUR_MAPS_API_KEY/${{ secrets.MAPS_API_KEY }}/' android/app/src/main/AndroidManifest.xml
+          sed -i '' 's/YOUR_MAPS_API_KEY/${{ secrets.MAPS_API_KEY }}/' android/app/src/main/AndroidManifest.xml
 
         #4 Install Dependencies
       - name: Install Dependencies
