@@ -55,6 +55,25 @@ This project is built using the following technologies:
 └── pubspec.yaml         # Flutter project configuration  
 ```
 
+## ⚙️ Setup Instructions
+
+To run this application successfully, please follow the setup steps below:
+
+### 1. Update API Keys in `AndroidManifest.xml`
+
+Before running the application, you need to replace the placeholder for your API key in the `AndroidManifest.xml` file.
+
+1. Open `android/app/src/main/AndroidManifest.xml`.
+2. Locate the line with the placeholder `YOUR_MAPS_API_KEY` in the `<meta-data>` tag.
+3. Replace `YOUR_MAPS_API_KEY` with your actual API key.
+
+Example:
+```xml
+<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_ACTUAL_API_KEY" />
+```
+
 ## 🖼️ Screenshot
 
 | ![1733104646007](image/README/1733104646007.png)                                                                                                |                                                |
