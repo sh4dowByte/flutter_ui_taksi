@@ -15,7 +15,7 @@
 
 The application features modern design elements, including interactive maps, smooth transition animations, and custom icons for each vehicle type. Key functionalities such as selecting pick-up/destination locations, fare estimation, and a list of available vehicles are designed to ensure a seamless user experience. Powered by Flutter, the app guarantees fast and responsive performance across various devices, making it an ideal solution for developers aiming to create aesthetically pleasing and high-performance taxi booking applications.
 
-<a href="https://github.com/sh4dowByte/flutter_ui_taksi/releases/download/v1.0.0%2B1-1/app-release.apk">
+<a href="https://github.com/sh4dowByte/flutter_ui_taksi/releases/download/v1.0.0%2B1-3/app-release.apk">
     <img src="https://playerzon.com/asset/download.png" width="200" data-canonical-src="https://playerzon.com/asset/download.png" style="max-width: 100%;">
 </a>
 
