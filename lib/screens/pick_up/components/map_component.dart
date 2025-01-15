@@ -1,4 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_ui_taksi/config/pallete.dart';
+import 'package:flutter_ui_taksi/services/google_map_service.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -26,8 +30,41 @@ class _MapComponentState extends State<MapComponent> {
   Set<Marker> _markers = {};
   String? _mapStyle;
   bool myLocationInit = false;
-  double iconSize = 100;
+  double iconSize = 70;
   double _mapRotation = 0.0;
+
+  // Tambahkan variabel polyline
+  Set<Polyline> _polylines = {};
+
+  Future<List<LatLng>> drawRoute(LatLng origin, LatLng destination) async {
+    final routeCoordinates = await getRoute(origin, destination);
+
+    setState(() {
+      _polylines.clear();
+
+      _polylines.add(
+        Polyline(
+          polylineId: const PolylineId('route'),
+          color: Pallete.color5, // Warna rute
+          width: 3, // Ketebalan garis
+          points: routeCoordinates, // Koordinat jalur
+        ),
+      );
+    });
+
+    // Pindahkan kamera agar mencakup jalur
+    // mapController.animateCamera(
+    //   CameraUpdate.newLatLngBounds(
+    //     LatLngBounds(
+    //       southwest: routeCoordinates.first,
+    //       northeast: routeCoordinates.last,
+    //     ),
+    //     50, // Padding
+    //   ),
+    // );
+    // ignore: empty_catches
+    return routeCoordinates;
+  }
 
   void _updateMarkerRotation(double newRotation) {
     setState(() {
@@ -67,6 +104,7 @@ class _MapComponentState extends State<MapComponent> {
       myLocationInit = true;
       _markers.add(
         Marker(
+          anchor: const Offset(0.5, 0.5),
           markerId: const MarkerId('myLocationMarker'),
           position: _initialMarkerPosition,
           icon: customIcon,
@@ -93,6 +131,8 @@ class _MapComponentState extends State<MapComponent> {
         Marker(
           markerId: const MarkerId('destinationMarker'),
           position: _initialMarkerPosition,
+          anchor: const Offset(0.5, 0.5),
+
           icon: customIcon,
           draggable: true, // Aktifkan dragging
           onDragEnd: (newPositions) {
@@ -131,8 +171,8 @@ class _MapComponentState extends State<MapComponent> {
 
   void addRiderMarker() async {
     final BitmapDescriptor customIcon = await getResizedIcon(
-      'assets/marker/car-icon-splash.png', // Path gambar ikon
-      150, // Ukuran ikon
+      'assets/marker/car-icon.png', // Path gambar ikon
+      80, // Ukuran ikon
     );
 
     LatLng position = const LatLng(-2.999283, 114.388786);
@@ -143,11 +183,134 @@ class _MapComponentState extends State<MapComponent> {
             markerId: const MarkerId('riderMarker'),
             position: position,
             icon: customIcon,
-            rotation: 130),
+            anchor: const Offset(0.5, 0.5),
+            rotation: 280),
       );
     });
 
     _moveCameraWithOffset(position, zoom: 15, offset: -0.007);
+
+    if (myLocation != null) {
+      final route = await drawRoute(position, myLocation!);
+      moveMarkerAlongRoute(
+          route, const MarkerId('riderMarker')); // Gerakkan marker
+    }
+  }
+
+  Future<void> moveMarkerAlongRoute(
+      List<LatLng> route, MarkerId markerId) async {
+    const int duration = 120; // Durasi total animasi dalam detik (2 menit)
+    if (route.isEmpty || route.length < 2) return;
+
+    double totalDistance = 0.0;
+    for (int i = 0; i < route.length - 1; i++) {
+      totalDistance += _calculateDistance(route[i], route[i + 1]);
+    }
+
+    for (int i = 0; i < route.length - 1; i++) {
+      LatLng start = route[i];
+      LatLng end = route[i + 1];
+
+      double segmentDistance = _calculateDistance(start, end);
+      int segmentDuration =
+          ((segmentDistance / totalDistance) * duration * 1000).toInt();
+      final int steps = segmentDuration ~/ 16; // 16ms per frame (60 FPS)
+
+      // Hitung rotasi berdasarkan arah
+      double rotation = _calculateBearing(start, end);
+
+      for (int step = 0; step < steps; step++) {
+        final double t = step / steps;
+        final LatLng interpolatedPosition = LatLng(
+          start.latitude + (end.latitude - start.latitude) * t,
+          start.longitude + (end.longitude - start.longitude) * t,
+        );
+
+        // Update posisi marker dan polyline
+        setState(() {
+          _markers = _markers.map((marker) {
+            if (marker.markerId == markerId) {
+              return marker.copyWith(
+                positionParam: interpolatedPosition,
+                rotationParam: rotation,
+              );
+            }
+            return marker;
+          }).toSet();
+
+          // Perbarui polyline
+          _polylines = _polylines.map((polyline) {
+            if (polyline.polylineId.value == 'route') {
+              // Perbarui rute dengan sisa jalur
+              final remainingRoute = route.sublist(i);
+              return polyline.copyWith(pointsParam: remainingRoute);
+            }
+            return polyline;
+          }).toSet();
+        });
+
+        await Future.delayed(const Duration(milliseconds: 16));
+      }
+    }
+
+    // Pastikan marker berada di titik akhir
+    setState(() {
+      _markers = _markers.map((marker) {
+        if (marker.markerId == markerId) {
+          return marker.copyWith(
+            positionParam: route.last,
+            rotationParam:
+                _calculateBearing(route[route.length - 2], route.last),
+          );
+        }
+        return marker;
+      }).toSet();
+
+      // Hapus rute (opsional)
+      _polylines = _polylines.map((polyline) {
+        if (polyline.polylineId.value == 'route') {
+          return polyline.copyWith(pointsParam: []);
+        }
+        return polyline;
+      }).toSet();
+    });
+  }
+
+  double _calculateBearing(LatLng start, LatLng end) {
+    final double startLat = _degreesToRadians(start.latitude);
+    final double startLng = _degreesToRadians(start.longitude);
+    final double endLat = _degreesToRadians(end.latitude);
+    final double endLng = _degreesToRadians(end.longitude);
+
+    final double dLng = endLng - startLng;
+    final double y = sin(dLng) * cos(endLat);
+    final double x =
+        cos(startLat) * sin(endLat) - sin(startLat) * cos(endLat) * cos(dLng);
+    final double bearing = atan2(y, x);
+
+    return (_radiansToDegrees(bearing) + 360) % 360;
+  }
+
+  double _radiansToDegrees(double radians) {
+    return radians * 50 / pi;
+  }
+
+  double _calculateDistance(LatLng start, LatLng end) {
+    const double earthRadius = 6371; // Radius bumi dalam kilometer
+    final double dLat = _degreesToRadians(end.latitude - start.latitude);
+    final double dLng = _degreesToRadians(end.longitude - start.longitude);
+
+    final double a = (sin(dLat / 2) * sin(dLat / 2)) +
+        cos(_degreesToRadians(start.latitude)) *
+            cos(_degreesToRadians(end.latitude)) *
+            (sin(dLng / 2) * sin(dLng / 2));
+    final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 50;
   }
 
   void changeMarkerPosition(LatLng newPosition) async {
@@ -165,6 +328,7 @@ class _MapComponentState extends State<MapComponent> {
       final updatedMarker = Marker(
         markerId: const MarkerId('myLocationMarker'),
         position: newPosition,
+        anchor: const Offset(0.5, 0.5),
         icon: customIcon, // Gunakan ikon yang sama
         draggable: true, // Pastikan draggable tetap aktif jika dibutuhkan
         onDragEnd: (newPositions) {
@@ -218,6 +382,9 @@ class _MapComponentState extends State<MapComponent> {
     );
   }
 
+  late final LatLng? myLocation;
+  late final LatLng? myDestination;
+
   void pinMarker(String markerId) async {
     final BitmapDescriptor customIcon = await getResizedIcon(
       markerId == 'myLocationMarker'
@@ -236,13 +403,24 @@ class _MapComponentState extends State<MapComponent> {
           markerId: MarkerId(markerId),
           icon: customIcon,
           draggable: false,
+          anchor: const Offset(0.5, 0.5),
           position: position);
 
       _markers.removeWhere((marker) => marker.markerId == MarkerId(markerId));
       _markers.add(updatedMarker);
 
+      if (markerId == 'myLocationMarker') {
+        myLocation = position;
+      } else {
+        myDestination = position;
+      }
+
       _moveCameraWithOffset(position);
     });
+
+    if (myLocation != null && myDestination != null) {
+      drawRoute(myLocation!, myDestination!);
+    }
   }
 
   @override
@@ -256,6 +434,7 @@ class _MapComponentState extends State<MapComponent> {
         ),
         style: _mapStyle,
         markers: _markers,
+        polylines: _polylines,
         onCameraMove: (CameraPosition position) {
           setState(() {
             _mapRotation = position.bearing; // Simpan rotasi
